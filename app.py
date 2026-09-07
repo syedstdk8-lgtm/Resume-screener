@@ -8,6 +8,12 @@ st.set_page_config(page_title="Resume Screener", layout="wide")
 st.title(" Resume Screening System")
 st.caption("Upload multiple candidate resumes")
 
+@st.cache_resource
+def load_model():
+    return SentenceTransformer("all-MiniLM-L6-v2")
+
+model = load_model()
+
 def extract_text_from_pdf(uploaded_file):
     text = ""
     reader = PdfReader(uploaded_file)
