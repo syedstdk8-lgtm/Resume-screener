@@ -4,10 +4,9 @@ from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer, util
 import pandas as pd
 
-# Page setup
-st.set_page_config(page_title="AI Resume Screener", layout="wide")
-st.title("📄 AI Resume Screening & Ranking System")
-st.caption("Upload multiple candidate resumes to rank them against a job description.")
+st.set_page_config(page_title="Resume Screener", layout="wide")
+st.title(" Resume Screening System")
+st.caption("Upload multiple candidate resumes")
 
 def extract_text_from_pdf(uploaded_file):
     text = ""
@@ -36,11 +35,9 @@ def score_resume(resume_text: str, jd_text: str, target_skills: set):
     jd_embedding = model.encode(clean_jd, convert_to_tensor=True)
     semantic_sim = float(util.cos_sim(res_embedding, jd_embedding)[0][0])
 
-    # 2. Hard Skill Match
     matched_skills = extract_skills(clean_res, target_skills)
     skill_coverage = len(matched_skills) / len(target_skills) if target_skills else 0.0
 
-    # 3. Composite Score (60% semantic, 40% hard skill presence)
     final_score = (0.6 * semantic_sim) + (0.4 * skill_coverage)
     final_score = max(0.0, min(final_score, 1.0)) * 100
 
@@ -51,19 +48,18 @@ def score_resume(resume_text: str, jd_text: str, target_skills: set):
         "missing_skills": ", ".join(target_skills - matched_skills) if (target_skills - matched_skills) else "None"
     }
 
-# UI Layout
 col1, col2 = st.columns([1, 1])
 
 with col1:
     st.subheader("1. Job Requirements")
     job_description = st.text_area(
         "Job Description",
-        placeholder="Paste JD text here (responsibilities, requirements, qualifications)...",
+        placeholder="Job description text here (responsibilities, requirements, qualifications)...",
         height=200
     )
     skills_input = st.text_input(
-        "Mandatory Skills (comma-separated)",
-        placeholder="python, fastapi, docker, aws, sql"
+        "Mandatory Skills separated by commas",
+        placeholder="python, AI, java, sql"
     )
 
 with col2:
@@ -76,7 +72,6 @@ with col2:
 
 st.divider()
 
-# Processing
 if st.button("Screen and Rank Resumes", type="primary"):
     if not job_description.strip():
         st.warning("Please provide a Job Description.")
